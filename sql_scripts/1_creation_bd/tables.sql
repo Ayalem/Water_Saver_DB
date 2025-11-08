@@ -244,6 +244,12 @@ CREATE TABLE NOTIFICATION (
   date_lecture TIMESTAMP
 );
 
+
+
+ALTER TABLE PARCELLE
+ADD statut VARCHAR2(20) DEFAULT 'ACTIVE' CHECK (statut IN ('ACTIVE', 'INACTIVE', 'EN_REPOS'));
+
+
 COMMENT ON TABLE NOTIFICATION IS 'Notifications envoyées aux utilisateurs';
 
 
