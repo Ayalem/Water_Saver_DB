@@ -1,0 +1,35 @@
+TRIGGER 2 : TRG_ALERTE_NOTIF (Communication Automatique)
+CREATE OR REPLACE TRIGGER TRG_ALERTE_NOTIF
+AFTER INSERT ON ALERTE
+FOR EACH ROW
+DECLARE
+    v_message VARCHAR2(500);
+BEGIN
+    -- 1. Déclenchement de TRG_ALERTE_NOTIF
+    v_message := 'Nouvelle alerte de sévérité ' || :NEW.severite || 
+                 ' détectée sur parcelle ' || :NEW.id_parcelle || 
+                 ' : ' || :NEW.type_alerte || ' (Mesure: ' || :NEW.valeur_mesuree || ')';
+
+    -- 2. Appelle PRC_NOTIFIER_AGRICULTEUR
+    PRC_NOTIFIER_AGRICULTEUR(
+        p_parcelle_id       => :NEW.id_parcelle,
+        p_type_notification => 'ALERTE_DEPASSEMENT',
+        p_message           => v_message,
+        p_alerte_id         => :NEW.id_alerte
+    );
+
+    -- 3. Appelle PRC_NOTIFIER_ADMIN (si critique)
+    IF :NEW.severite IN ('HAUTE', 'CRITIQUE') THEN
+        PRC_NOTIFIER_ADMIN(
+            p_type_notification => 'ALERTE_CRITIQUE',
+            p_message           => 'CRITIQUE: ' || v_message,
+            p_alerte_id         => :NEW.id_alerte
+        );
+    END IF;
+    -- Note : Ces deux appels mènent à l'Appel de PRC_AJOUTER_NOTIFICATION.
+
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Erreur Trigger TRG_ALERTE_NOTIF: ' || SQLERRM);
+END TRG_ALERTE_NOTIF;
+/
