@@ -9,8 +9,8 @@ BEGIN
 
 
 
-   SELECT user_id, email, password_hash, tentatives_echec, statut, date_derniere_connexion
-   INTO v_user_rec.user_id, v_user_rec.email, v_user_rec.password_hash, v_user_rec.tentatives_echec, v_user_rec.statut, v_user_rec.date_derniere_connexion
+   SELECT user_id, email, password_hash, tentative_echec, statut, date_derniere_connexion
+   INTO v_user_rec.user_id, v_user_rec.email, v_user_rec.password_hash, v_user_rec.tentative_echec, v_user_rec.statut, v_user_rec.date_derniere_connexion
    FROM UTILISATEUR
    WHERE email=p_email;
    
@@ -20,7 +20,7 @@ BEGIN
       v_user_rec.tentatives_echec:= v_user_rec.tentatives_echec+1;
       
       UPDATE UTILSATEUR
-      SET tentatives_echecs=v_user_rec.tentatives_echec
+      SET tentatives_echec=v_user_rec.tentatives_echec
       WHERE email=p_email;
       
       
@@ -32,8 +32,8 @@ BEGIN
       END IF;
       
    ELSE
-    UPDATE UTILSATEUR
-    SET tentatives_echecs=0,STATUS='ACTIF',date_derniere_connection=SYSTIMESTAMP
+    UPDATE UTILISATEUR
+    SET tentatives_echec=0,STATUS='ACTIF',date_derniere_connection=SYSTIMESTAMP
     WHERE user_id=v_user_rec.user_id;
     DBMS_OUTPUT.PUT_LINE('Connexion réussie pour : ' || p_email);
     END IF;
@@ -43,4 +43,3 @@ EXCEPTION
    RAISE_APPLICATION_ERROR(-20005,'email non trouvé.');
       
 END;
-
