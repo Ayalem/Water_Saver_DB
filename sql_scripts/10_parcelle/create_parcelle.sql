@@ -1,0 +1,53 @@
+CREATE OR REPLACE FUNCTION CREATE_PARCELLE(
+    p_champ_id IN NUMBER,
+    p_type_culture_id IN NUMBER DEFAULT NULL,
+    p_nom IN VARCHAR2,
+    p_superficie IN NUMBER,
+    p_latitude IN NUMBER DEFAULT NULL,
+    p_longitude IN NUMBER DEFAULT NULL,
+    p_date_plantation IN DATE DEFAULT NULL,
+    p_date_recolte_prevue IN DATE DEFAULT NULL
+) RETURN NUMBER
+IS
+    v_parcelle_id NUMBER;
+    v_champ_exists NUMBER;
+    v_superficie_champ NUMBER;
+    v_superficie_totale_parcelles NUMBER;
+BEGIN
+    -- Vérifier si le champ existe et est actif
+    SELECT COUNT(*), superficie
+    INTO v_champ_exists, v_superficie_champ
+    FROM CHAMP
+    WHERE champ_id = p_champ_id AND statut = 'ACTIF';
+    
+    IF v_champ_exists = 0 THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Champ non trouvé ou inactif');
+    END IF;
+    
+    -- Vérifier la superficie totale des parcelles
+    SELECT NVL(SUM(superficie), 0)
+    INTO v_superficie_totale_parcelles
+    FROM PARCELLE
+    WHERE champ_id = p_champ_id AND statut = 'ACTIVE';
+    
+    IF (v_superficie_totale_parcelles + p_superficie) > v_superficie_champ THEN
+        RAISE_APPLICATION_ERROR(-20004, 'Superficie totale des parcelles dépasse celle du champ');
+    END IF;
+    
+    -- Insérer la nouvelle parcelle
+    INSERT INTO PARCELLE (
+        champ_id, type_culture_id, nom, superficie, latitude, longitude,
+        date_plantation, date_recolte_prevue
+    ) VALUES (
+        p_champ_id, p_type_culture_id, p_nom, p_superficie, p_latitude, p_longitude,
+        p_date_plantation, p_date_recolte_prevue
+    )
+    RETURNING parcelle_id INTO v_parcelle_id;
+    
+    COMMIT;
+    RETURN v_parcelle_id;
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE;
+END CREATE_PARCELLE;
