@@ -1,0 +1,51 @@
+CREATE OR REPLACE FUNCTION update_batterie_capteur(
+    p_capteur_id NUMBER,
+    p_niveau_batterie NUMBER
+) RETURN NUMBER IS
+    v_parcelle_id NUMBER;
+    v_user_id NUMBER;
+BEGIN
+    IF p_niveau_batterie < 0 OR p_niveau_batterie > 100 THEN
+        RAISE_APPLICATION_ERROR(-20005, 'Niveau batterie invalide (0-100)');
+    END IF;
+    SELECT c.parcelle_id, ch.user_id
+    INTO v_parcelle_id, v_user_id
+    FROM CAPTEUR c
+    JOIN PARCELLE p ON c.parcelle_id = p.parcelle_id
+    JOIN CHAMP ch ON p.champ_id = ch.champ_id
+    WHERE c.capteur_id = p_capteur_id;
+    UPDATE CAPTEUR
+    SET niveau_batterie = p_niveau_batterie
+    WHERE capteur_id = p_capteur_id;
+    IF p_niveau_batterie < 20 THEN
+        INSERT INTO ALERTE (
+            parcelle_id, type_alerte, severite, description,
+            valeur_mesuree, valeur_seuil
+        ) VALUES (
+            v_parcelle_id, 'BATTERIE_FAIBLE', 'CRITIQUE',
+            'Batterie capteur ' || p_capteur_id || ' critique',
+            p_niveau_batterie, 20
+        );
+        
+        INSERT INTO NOTIFICATION (user_id, type_notification, message)
+        VALUES (v_user_id, 'BATTERIE_FAIBLE', 
+                'Batterie capteur ' || p_capteur_id || ' : ' || p_niveau_batterie || '%');
+    ELSIF p_niveau_batterie < 40 THEN
+        INSERT INTO ALERTE (
+            parcelle_id, type_alerte, severite, description,
+            valeur_mesuree, valeur_seuil
+        ) VALUES (
+            v_parcelle_id, 'BATTERIE_FAIBLE', 'ATTENTION',
+            'Batterie capteur ' || p_capteur_id || ' basse',
+            p_niveau_batterie, 40
+        );
+    END IF;
+    
+    COMMIT;
+    RETURN 1;
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE;
+END update_batterie_capteur;
+/
