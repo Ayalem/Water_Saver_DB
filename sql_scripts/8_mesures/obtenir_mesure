@@ -1,0 +1,24 @@
+CREATE OR REPLACE FUNCTION obtenir_mesures(
+    p_capteur_id NUMBER,
+    p_date_debut TIMESTAMP,
+    p_date_fin TIMESTAMP
+) RETURN SYS_REFCURSOR IS
+    v_cursor SYS_REFCURSOR;
+BEGIN
+    OPEN v_cursor FOR
+        SELECT 
+            mesure_id,
+            date_mesure,
+            type_mesure,
+            valeur_mesure,
+            unite_mesure,
+            qualite_signal,
+            anomalie_detectee
+        FROM MESURE
+        WHERE capteur_id = p_capteur_id
+        AND date_mesure BETWEEN p_date_debut AND p_date_fin
+        ORDER BY date_mesure DESC;
+    
+    RETURN v_cursor;
+END obtenir_mesures;
+/
