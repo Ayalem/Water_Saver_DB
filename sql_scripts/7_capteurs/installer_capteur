@@ -1,0 +1,28 @@
+CREATE OR REPLACE FUNCTION installer_capteur(
+    p_reference VARCHAR,
+    p_type_capteur VARCHAR,
+    p_id_parcelle INT,
+    p_id_technicien INT
+) RETURNS INT AS $$
+DECLARE
+    v_id_capteur INT;
+BEGIN
+    -- Vérifier que le technicien existe et a le bon rôle
+    IF NOT EXISTS (
+        SELECT 1 FROM utilisateurs 
+        WHERE id_utilisateur = p_id_technicien AND role = 'technicien' AND actif = TRUE
+    ) THEN
+        RAISE EXCEPTION 'Technicien invalide ou inactif';
+    END IF;
+    
+    -- Insérer le capteur
+    INSERT INTO capteurs (reference, type_capteur, id_parcelle, date_installation, status, id_technicien)
+    VALUES (p_reference, p_type_capteur, p_id_parcelle, CURRENT_TIMESTAMP, 'actif', p_id_technicien)
+    RETURNING id_capteur INTO v_id_capteur;
+    
+    -- Enregistrer l'intervention
+    INSERT INTO interventions (id_capteur, id_technicien, type_intervention, description)
+    VALUES (v_id_capteur, p_id_technicien, 'installation', 'Installation initiale du capteur');
+    
+    RETURN v_id_capteur;
+END;
