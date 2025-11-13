@@ -1,0 +1,41 @@
+CREATE OR REPLACE FUNCTION changer_parcelle_capteur(
+    p_capteur_id NUMBER,
+    p_nouvelle_parcelle NUMBER,
+    p_technicien_id NUMBER
+) RETURN NUMBER IS
+    v_ancienne_parcelle NUMBER;
+    v_count NUMBER;
+BEGIN
+    SELECT parcelle_id INTO v_ancienne_parcelle
+    FROM CAPTEUR
+    WHERE capteur_id = p_capteur_id;
+    SELECT COUNT(*) INTO v_count
+    FROM PARCELLE
+    WHERE parcelle_id = p_nouvelle_parcelle AND statut = 'ACTIVE';
+    
+    IF v_count = 0 THEN
+        RAISE_APPLICATION_ERROR(-20006, 'Nouvelle parcelle invalide ou inactive');
+    END IF;
+
+    UPDATE CAPTEUR
+    SET parcelle_id = p_nouvelle_parcelle
+    WHERE capteur_id = p_capteur_id;
+
+    INSERT INTO INTERVENTION (
+        parcelle_id, capteur_id, technicien_id,
+        type_intervention, priorite, statut, description, date_debut
+    ) VALUES (
+        p_nouvelle_parcelle, p_capteur_id, p_technicien_id,
+        'REMPLACEMENT_CAPTEUR', 'MOYENNE', 'TERMINE',
+        'Déplacement parcelle ' || v_ancienne_parcelle || ' → ' || p_nouvelle_parcelle,
+        SYSDATE
+    );
+    
+    COMMIT;
+    RETURN 1;
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE;
+END changer_parcelle_capteur;
+/
