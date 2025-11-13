@@ -1,0 +1,57 @@
+CREATE OR REPLACE FUNCTION collecter_mesure(
+    p_capteur_id NUMBER,
+    p_type_mesure VARCHAR2,
+    p_valeur_mesure NUMBER,
+    p_unite_mesure VARCHAR2,
+    p_qualite_signal NUMBER DEFAULT 100
+) RETURN NUMBER IS
+    v_mesure_id NUMBER;
+    v_statut VARCHAR2(20);
+    v_parcelle_id NUMBER;
+    v_type_culture_id NUMBER;
+    v_anomalie VARCHAR2(3) := 'NON';
+    v_seuil_min NUMBER;
+    v_seuil_max NUMBER;
+BEGIN
+    SELECT c.statut, c.parcelle_id, p.type_culture_id
+    INTO v_statut, v_parcelle_id, v_type_culture_id
+    FROM CAPTEUR c
+    JOIN PARCELLE p ON c.parcelle_id = p.parcelle_id
+    WHERE c.capteur_id = p_capteur_id;
+    
+    IF v_statut != 'ACTIF' THEN
+        RAISE_APPLICATION_ERROR(-20007, 'Capteur non actif - statut: ' || v_statut);
+    END IF;
+    BEGIN
+        SELECT seuil_min, seuil_max
+        INTO v_seuil_min, v_seuil_max
+        FROM SEUIL_CULTURE
+        WHERE type_culture_id = v_type_culture_id
+        AND type_seuil = p_type_mesure
+        AND ROWNUM = 1;
+        IF p_valeur_mesure < v_seuil_min OR p_valeur_mesure > v_seuil_max THEN
+            v_anomalie := 'OUI';
+        END IF;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            NULL; 
+    END;
+    INSERT INTO MESURE (
+        capteur_id, type_mesure, valeur_mesure,
+        unite_mesure, qualite_signal, anomalie_detectee
+    ) VALUES (
+        p_capteur_id, p_type_mesure, p_valeur_mesure,
+        p_unite_mesure, p_qualite_signal, v_anomalie
+    ) RETURNING mesure_id INTO v_mesure_id;
+    UPDATE CAPTEUR
+    SET date_derniere_mesure = SYSDATE
+    WHERE capteur_id = p_capteur_id;
+    
+    COMMIT;
+    RETURN v_mesure_id;
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE;
+END collecter_mesure;
+/
