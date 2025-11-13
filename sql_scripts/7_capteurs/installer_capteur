@@ -8,7 +8,6 @@ CREATE OR REPLACE FUNCTION installer_capteur(
     v_capteur_id NUMBER;
     v_count NUMBER;
 BEGIN
-    -- Vérifier que la parcelle existe et est active
     SELECT COUNT(*) INTO v_count
     FROM PARCELLE
     WHERE parcelle_id = p_parcelle_id AND statut = 'ACTIVE';
@@ -16,8 +15,6 @@ BEGIN
     IF v_count = 0 THEN
         RAISE_APPLICATION_ERROR(-20001, 'Parcelle invalide ou inactive');
     END IF;
-    
-    -- Insérer le capteur
     INSERT INTO CAPTEUR (
         parcelle_id, numero_serie, modele, type_capteur, 
         statut, frequence_mesure, date_installation, niveau_batterie
