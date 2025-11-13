@@ -1,28 +1,38 @@
 CREATE OR REPLACE FUNCTION installer_capteur(
-    p_reference VARCHAR,
-    p_type_capteur VARCHAR,
-    p_id_parcelle INT,
-    p_id_technicien INT
-) RETURNS INT AS $$
-DECLARE
-    v_id_capteur INT;
+    p_parcelle_id NUMBER,
+    p_numero_serie VARCHAR2,
+    p_modele VARCHAR2,
+    p_type_capteur VARCHAR2,
+    p_frequence_mesure NUMBER DEFAULT 15
+) RETURN NUMBER IS
+    v_capteur_id NUMBER;
+    v_count NUMBER;
 BEGIN
-    -- Vérifier que le technicien existe et a le bon rôle
-    IF NOT EXISTS (
-        SELECT 1 FROM utilisateurs 
-        WHERE id_utilisateur = p_id_technicien AND role = 'technicien' AND actif = TRUE
-    ) THEN
-        RAISE EXCEPTION 'Technicien invalide ou inactif';
+    -- Vérifier que la parcelle existe et est active
+    SELECT COUNT(*) INTO v_count
+    FROM PARCELLE
+    WHERE parcelle_id = p_parcelle_id AND statut = 'ACTIVE';
+    
+    IF v_count = 0 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Parcelle invalide ou inactive');
     END IF;
     
     -- Insérer le capteur
-    INSERT INTO capteurs (reference, type_capteur, id_parcelle, date_installation, status, id_technicien)
-    VALUES (p_reference, p_type_capteur, p_id_parcelle, CURRENT_TIMESTAMP, 'actif', p_id_technicien)
-    RETURNING id_capteur INTO v_id_capteur;
+    INSERT INTO CAPTEUR (
+        parcelle_id, numero_serie, modele, type_capteur, 
+        statut, frequence_mesure, date_installation, niveau_batterie
+    ) VALUES (
+        p_parcelle_id, p_numero_serie, p_modele, p_type_capteur,
+        'ACTIF', p_frequence_mesure, SYSDATE, 100
+    ) RETURNING capteur_id INTO v_capteur_id;
     
-    -- Enregistrer l'intervention
-    INSERT INTO interventions (id_capteur, id_technicien, type_intervention, description)
-    VALUES (v_id_capteur, p_id_technicien, 'installation', 'Installation initiale du capteur');
-    
-    RETURN v_id_capteur;
-END;
+    COMMIT;
+    RETURN v_capteur_id;
+EXCEPTION
+    WHEN DUP_VAL_ON_INDEX THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Numéro de série déjà existant');
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE;
+END installer_capteur;
+/
