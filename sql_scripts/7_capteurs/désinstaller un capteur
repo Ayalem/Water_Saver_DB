@@ -1,0 +1,41 @@
+CREATE OR REPLACE FUNCTION desinstaller_capteur(
+    p_capteur_id NUMBER,
+    p_technicien_id NUMBER,
+    p_raison VARCHAR2 DEFAULT NULL
+) RETURN NUMBER IS
+    v_rows_updated NUMBER;
+    v_parcelle_id NUMBER;
+BEGIN
+    SELECT parcelle_id INTO v_parcelle_id
+    FROM CAPTEUR
+    WHERE capteur_id = p_capteur_id;
+    UPDATE CAPTEUR
+    SET statut = 'INACTIF',
+        date_derniere_maintenance = SYSDATE
+    WHERE capteur_id = p_capteur_id
+    AND statut != 'INACTIF';
+    
+    v_rows_updated := SQL%ROWCOUNT;
+    
+    IF v_rows_updated = 0 THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Capteur introuvable ou déjà inactif');
+    END IF;
+    INSERT INTO INTERVENTION (
+        parcelle_id, capteur_id, technicien_id,
+        type_intervention, priorite, statut, description, date_debut
+    ) VALUES (
+        v_parcelle_id, p_capteur_id, p_technicien_id,
+        'REMPLACEMENT_CAPTEUR', 'MOYENNE', 'TERMINE', 
+        'Désinstallation: ' || NVL(p_raison, 'Non spécifié'), SYSDATE
+    );
+    
+    COMMIT;
+    RETURN v_rows_updated;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Capteur introuvable');
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE;
+END desinstaller_capteur;
+/
