@@ -115,3 +115,52 @@ EXCEPTION
         RAISE_APPLICATION_ERROR(-20092, 'Erreur dans la génération des rapports périodiques: ' || SQLERRM);
 END PRC_GENERER_RAPPORT_PERIODIQUE;
 /
+
+--Planification des Tâches(DBMS_SCHEDULER)
+BEGIN
+    -- JOB 1 : Rapport HEBDOMADAIRE (Chaque Lundi à 2h00 pour la semaine précédente)
+    DBMS_SCHEDULER.CREATE_JOB (
+        job_name        => 'JOB_RPT_HEBDO',
+        job_type        => 'STORED_PROCEDURE',
+        job_action      => 'PRC_GENERER_RAPPORT_PERIODIQUE',
+        start_date      => TRUNC(SYSTIMESTAMP) + INTERVAL '2' HOUR,
+        repeat_interval => 'FREQ=WEEKLY; BYDAY=MON', -- Chaque Lundi
+        number_of_arguments => 2,
+        enabled         => FALSE, -- On les active après avoir défini les arguments
+        comments        => 'Génère les rapports hebdomadaires par champ.'
+    );
+    DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('JOB_RPT_HEBDO', 1, 'SEMAINE');
+    DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('JOB_RPT_HEBDO', 2, 1); -- ID utilisateur système
+    DBMS_SCHEDULER.ENABLE('JOB_RPT_HEBDO');
+
+    -- JOB 2 : Rapport MENSUEL (Le 1er de chaque mois à 3h00 pour le mois précédent)
+    DBMS_SCHEDULER.CREATE_JOB (
+        job_name        => 'JOB_RPT_MENSUEL',
+        job_type        => 'STORED_PROCEDURE',
+        job_action      => 'PRC_GENERER_RAPPORT_PERIODIQUE',
+        start_date      => TRUNC(SYSTIMESTAMP) + INTERVAL '3' HOUR,
+        repeat_interval => 'FREQ=MONTHLY; BYMONTHDAY=1', -- Le 1er du mois
+        number_of_arguments => 2,
+        enabled         => FALSE,
+        comments        => 'Génère les rapports mensuels par champ.'
+    );
+    DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('JOB_RPT_MENSUEL', 1, 'MOIS');
+    DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('JOB_RPT_MENSUEL', 2, 1); -- ID utilisateur système
+    DBMS_SCHEDULER.ENABLE('JOB_RPT_MENSUEL');
+    
+    -- JOB 3 : Rapport ANNUEL (Le 1er Janvier à 4h00 pour l'année précédente)
+    DBMS_SCHEDULER.CREATE_JOB (
+        job_name        => 'JOB_RPT_ANNUEL',
+        job_type        => 'STORED_PROCEDURE',
+        job_action      => 'PRC_GENERER_RAPPORT_PERIODIQUE',
+        start_date      => TRUNC(SYSTIMESTAMP) + INTERVAL '4' HOUR,
+        repeat_interval => 'FREQ=YEARLY; BYMONTH=JAN; BYMONTHDAY=1', -- Le 1er Janvier
+        number_of_arguments => 2,
+        enabled         => FALSE,
+        comments        => 'Génère les rapports annuels par champ.'
+    );
+    DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('JOB_RPT_ANNUEL', 1, 'ANNEE');
+    DBMS_SCHEDULER.SET_JOB_ARGUMENT_VALUE('JOB_RPT_ANNUEL', 2, 1); -- ID utilisateur système
+    DBMS_SCHEDULER.ENABLE('JOB_RPT_ANNUEL');
+END;
+/
