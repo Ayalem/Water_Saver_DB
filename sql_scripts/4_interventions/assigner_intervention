@@ -1,0 +1,14 @@
+CREATE OR REPLACE PROCEDURE assigner_intervention(
+   p_intervention_id NUMBER,
+   p_technicien_id NUMBER)
+IS 
+BEGIN
+   UPDATE INTERVENTION
+   SET technicien_id =p_technicien_id,
+       statut='assignee',
+       date_assignation=SYSDATE
+   WHERE intervention_id=p_intervention_id;
+
+  notify_technicien(p_technicien_id,'Vous avez été assigné à l'intervention #' || p_intervention_id);
+END;
+/
