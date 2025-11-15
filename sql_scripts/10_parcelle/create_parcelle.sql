@@ -12,7 +12,7 @@ IS
     v_parcelle_id NUMBER;
     v_champ_exists NUMBER;
     v_superficie_champ NUMBER;
-    v_superficie_totale_parcelles NUMBER;
+    v_superficie_occupee NUMBER;
 BEGIN
     -- Vérifier si le champ existe et est actif
     SELECT COUNT(*), superficie
@@ -24,13 +24,10 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20003, 'Champ non trouvé ou inactif');
     END IF;
     
-    -- Vérifier la superficie totale des parcelles
-    SELECT NVL(SUM(superficie), 0)
-    INTO v_superficie_totale_parcelles
-    FROM PARCELLE
-    WHERE champ_id = p_champ_id AND statut = 'ACTIVE';
+    -- Vérifier la superficie réelle déjà occupée
+    v_superficie_occupee := SUPERFICIE_REELLE_CHAMP(p_champ_id);
     
-    IF (v_superficie_totale_parcelles + p_superficie) > v_superficie_champ THEN
+    IF (v_superficie_occupee + p_superficie) > v_superficie_champ THEN
         RAISE_APPLICATION_ERROR(-20004, 'Superficie totale des parcelles dépasse celle du champ');
     END IF;
     
@@ -51,3 +48,4 @@ EXCEPTION
         ROLLBACK;
         RAISE;
 END CREATE_PARCELLE;
+/
