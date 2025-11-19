@@ -28,4 +28,4 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20032, 'Veuillez fournir un email ou un user_id.');
     END IF;
 END;
-/
+

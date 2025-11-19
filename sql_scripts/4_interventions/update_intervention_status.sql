@@ -10,4 +10,4 @@ BEGIN
       WHERE intervention_id=:NEW.intervention_id;
   END IF;
 END;
-/
+

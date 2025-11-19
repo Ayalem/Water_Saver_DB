@@ -21,4 +21,4 @@ EXCEPTION
         ROLLBACK;
         RAISE_APPLICATION_ERROR(-20003, 'Erreur lors de la mise à jour du statut de lecture: ' || SQLERRM);
 END PRC_MARQUER_LUE;
-/
+

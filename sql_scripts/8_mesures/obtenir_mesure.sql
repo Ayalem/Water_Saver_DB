@@ -21,4 +21,4 @@ BEGIN
     
     RETURN v_cursor;
 END obtenir_mesures;
-/
+

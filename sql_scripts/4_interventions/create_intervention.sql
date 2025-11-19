@@ -20,5 +20,5 @@ BEGIN
             'Intervention générée automatiquement suite à une alerte.');
 notifier_admin('Nouvelle alerte #'|| :NEW.alerte_id || 'intervention doit être assignée.');
 END;
-/
+
 

@@ -26,4 +26,4 @@ EXCEPTION
     WHEN OTHERS THEN
         RAISE_APPLICATION_ERROR(-20050, 'Erreur de récupération des seuils: ' || SQLERRM);
 END PRC_GET_SEUILS;
-/
+

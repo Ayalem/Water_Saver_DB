@@ -11,4 +11,4 @@ BEGIN
 
   notify_technicien(p_technicien_id,'Vous avez été assigné à l'intervention #' || p_intervention_id);
 END;
-/
+

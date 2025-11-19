@@ -33,4 +33,4 @@ EXCEPTION
         ROLLBACK;
         RAISE;
 END maintenance_capteur;
-/
+

@@ -32,4 +32,4 @@ EXCEPTION
     WHEN OTHERS THEN
         RAISE_APPLICATION_ERROR(-20006, 'Erreur lors de la notification de l''administrateur: ' || SQLERRM);
 END PRC_NOTIFIER_ADMIN;
-/
+

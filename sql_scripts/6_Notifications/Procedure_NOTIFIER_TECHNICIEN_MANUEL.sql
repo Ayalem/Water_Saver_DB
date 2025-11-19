@@ -66,4 +66,4 @@ EXCEPTION
         ROLLBACK;
         RAISE_APPLICATION_ERROR(-20022, 'Erreur inattendue lors de la notification manuelle: ' || SQLERRM);
 END PRC_NOTIFIER_TECHNICIEN_MANUEL;
-/
+

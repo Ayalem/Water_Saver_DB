@@ -48,4 +48,4 @@ EXCEPTION
         ROLLBACK;
         RAISE;
 END update_batterie_capteur;
-/
+

@@ -38,4 +38,4 @@ EXCEPTION
         ROLLBACK;
         RAISE;
 END changer_parcelle_capteur;
-/
+

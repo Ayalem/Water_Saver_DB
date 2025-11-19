@@ -25,4 +25,4 @@ EXCEPTION
         ROLLBACK;
         RAISE_APPLICATION_ERROR(-20040, 'Erreur lors de la création de l''alerte: ' || SQLERRM);
 END PRC_CREER_ALERTE;
-/
+

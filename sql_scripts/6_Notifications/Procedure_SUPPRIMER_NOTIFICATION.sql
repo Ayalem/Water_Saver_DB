@@ -22,4 +22,4 @@ EXCEPTION
         ROLLBACK;
         RAISE_APPLICATION_ERROR(-20004, 'Erreur lors de la suppression de la notification: ' || SQLERRM);
 END PRC_SUPPRIMER_NOTIFICATION;
-/
+

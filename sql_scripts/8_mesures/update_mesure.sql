@@ -24,4 +24,4 @@ EXCEPTION
         ROLLBACK;
         RAISE;
 END update_mesure;
-/
+

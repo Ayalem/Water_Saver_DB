@@ -67,7 +67,7 @@ BEGIN
         END;
     END LOOP;
 END collecter_mesures_all;
-/
+
 BEGIN
     DBMS_SCHEDULER.CREATE_JOB(
         job_name        => 'JOB_COLLECTE_MESURES_15MIN',
@@ -78,4 +78,4 @@ BEGIN
         enabled         => TRUE
     );
 END;
-/
+

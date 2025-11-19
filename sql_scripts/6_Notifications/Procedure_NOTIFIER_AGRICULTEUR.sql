@@ -28,4 +28,4 @@ EXCEPTION
     WHEN OTHERS THEN
         RAISE_APPLICATION_ERROR(-20021, 'Erreur lors de la notification de l''agriculteur: ' || SQLERRM);
 END PRC_NOTIFIER_AGRICULTEUR;
-/
+

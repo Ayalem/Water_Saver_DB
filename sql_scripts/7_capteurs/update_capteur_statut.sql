@@ -32,4 +32,3 @@ EXCEPTION
         ROLLBACK;
         RAISE;
 END update_statut_capteur;
-/

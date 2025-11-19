@@ -85,4 +85,4 @@ EXCEPTION
         -- Utilise le code d'erreur personnalisé
         RAISE_APPLICATION_ERROR(-20090, 'Erreur lors de la génération du rapport final: ' || SQLERRM);
 END PRC_GENERER_RAPPORT_AUDIT_FINAL;
-/
+

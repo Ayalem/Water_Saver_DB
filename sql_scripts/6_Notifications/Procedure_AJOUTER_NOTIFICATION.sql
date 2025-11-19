@@ -20,4 +20,4 @@ EXCEPTION
         ROLLBACK;
         RAISE_APPLICATION_ERROR(-20002, 'Erreur lors de l''ajout de la notification: ' || SQLERRM);
 END PRC_AJOUTER_NOTIFICATION;
-/
+

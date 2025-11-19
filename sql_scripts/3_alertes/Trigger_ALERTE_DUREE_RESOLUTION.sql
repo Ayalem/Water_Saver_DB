@@ -16,4 +16,4 @@ BEGIN
     :NEW.duree_minutes := ROUND(v_duree_sec / 60);
     
 END TRG_ALERTE_DUREE_RESOLUTION;
-/
+

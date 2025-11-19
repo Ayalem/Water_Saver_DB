@@ -23,4 +23,4 @@ EXCEPTION
     WHEN OTHERS THEN
         RAISE_APPLICATION_ERROR(-20070, 'Erreur lors de la mise à jour : ' || SQLERRM);
 END;
-/
+

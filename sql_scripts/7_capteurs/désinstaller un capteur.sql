@@ -38,4 +38,3 @@ EXCEPTION
         ROLLBACK;
         RAISE;
 END desinstaller_capteur;
-/

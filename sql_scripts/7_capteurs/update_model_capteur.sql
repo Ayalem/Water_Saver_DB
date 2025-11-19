@@ -32,4 +32,4 @@ EXCEPTION
         ROLLBACK;
         RAISE;
 END update_modele_capteur;
-/
+

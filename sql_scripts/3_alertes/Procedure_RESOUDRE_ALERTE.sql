@@ -20,4 +20,4 @@ EXCEPTION
         ROLLBACK;
         RAISE_APPLICATION_ERROR(-20041, 'Erreur lors de la résolution de l''alerte: ' || SQLERRM);
 END PRC_RESOUDRE_ALERTE;
-/
+

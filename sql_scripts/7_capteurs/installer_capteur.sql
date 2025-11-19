@@ -32,4 +32,4 @@ EXCEPTION
         ROLLBACK;
         RAISE;
 END installer_capteur;
-/
+

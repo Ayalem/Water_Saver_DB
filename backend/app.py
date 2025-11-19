@@ -1,77 +1,37 @@
-from flask import Flask, request, jsonify
-from passlib.context import CryptContext
-import cx_Oracle
+from flask import Flask ,jsonify,request
+from sqlalchemy import create_engine,text
+from sqlalchemy.orm import sessionmaker
+import oracledb
 import os
-
-app = Flask(__name__)
-
-# Config passlib : bcrypt ou argon2
-pwd_context = CryptContext(schemes=["bcrypt"], bcrypt__rounds=12) 
-
-# Connexion Oracle (compte technique)
-DSN = "host:1521/ORCL"
-DB_USER = "app_user"
-DB_PASS = "app_pass"
-
-def get_db_conn():
-    return cx_Oracle.connect(DB_USER, DB_PASS, DSN)
-
-@app.route('/register', methods=['POST'])
-def register():
-    data = request.json
-    login = data['login']
-    password = data['password']
-    nom = data.get('nom')
-    prenom = data.get('prenom')
-    email = data.get('email')
-    role = data.get('role', 'AGRICULTEUR') 
-
-    # 1) Hash côté application
-    password_hash = pwd_context.hash(password) 
-
-    # 2) Appeler procédure CREER_UTILISATEUR ou insert direct
-    conn = get_db_conn()
-    cur = conn.cursor()
+from dotenv import load_dotenv
+from models import Base
+load_dotenv()
+app=Flask(__name__)
+connection_string = (
+    f"oracle+oracledb://{os.getenv('ORACLE_USER')}:"
+    f"{os.getenv('ORACLE_PASSWORD')}@"
+    f"{os.getenv('ORACLE_HOST')}:{os.getenv('ORACLE_PORT')}/"
+    f"?service_name={os.getenv('ORACLE_SERVICE')}"
+)
+engine=create_engine(connection_string,echo=True)
+Session=sessionmaker(bind=engine)
+@app.route('/health')
+def health():
+    """ Test the database connection"""
     try:
-        cur.execute("""
-            INSERT INTO UTILISATEUR (login, password_hash, nom, prenom, email, role)
-            VALUES (:login, :phash, :nom, :prenom, :email, :role)
-        """, {
-            'login': login,
-            'phash': password_hash,
-            'nom': nom,
-            'prenom': prenom,
-            'email': email,
-            'role': role
-        })
-        conn.commit()
-    finally:
-        cur.close()
-        conn.close()
+        with engine.connect() as conn:
+            result=conn.execute(text("SELECT 1 FROM DUAL"))
+            return jsonify({
+                 "status":"connected",
+                 "result":result.scalar()
+            })
+        
+    except Exception as e:
+        return jsonify({
+             "status":"Error",
+             "result":str(e)
 
-    return jsonify({"message": "Utilisateur créé"}), 201
+            }),500
 
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.json
-    login = data['login']
-    password = data['password']
-
-    conn = get_db_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT user_id, password_hash, role FROM UTILISATEUR WHERE login = :login", {'login': login})
-    row = cur.fetchone()
-    cur.close()
-    conn.close()
-
-    if not row:
-        return jsonify({"error":"Invalid credentials"}), 401
-
-    user_id, password_hash_db, role = row
-
-    # Vérifier le mot de passe
-    if not pwd_context.verify(password, password_hash_db):
-        return jsonify({"error":"Invalid credentials"}), 401
-
-    # OK -> créer session / JWT, etc.
-    return jsonify({"message":"Logged in", "user_id": user_id, "role": role})
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
