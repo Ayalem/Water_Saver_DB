@@ -5,6 +5,8 @@ CREATE OR REPLACE PROCEDURE login_utilisateur(
 IS
     v_user_rec UTILISATEUR%ROWTYPE;
 BEGIN
+
+check_user_exists(p_email=>p_email);
     -- 1. Fetch user
     SELECT *
     INTO v_user_rec
