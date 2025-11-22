@@ -10,20 +10,16 @@ CREATE OR REPLACE FUNCTION CREATE_PARCELLE(
 ) RETURN NUMBER
 IS
     v_parcelle_id NUMBER;
-    v_champ_exists NUMBER;
     v_superficie_champ NUMBER;
     v_superficie_occupee NUMBER;
 BEGIN
     -- Vérifier si le champ existe et est actif
-    SELECT COUNT(*), superficie
-    INTO v_champ_exists, v_superficie_champ
+    SELECT superficie
+    INTO v_superficie_champ
     FROM CHAMP
-    WHERE champ_id = p_champ_id AND statut = 'ACTIF';
-    
-    IF v_champ_exists = 0 THEN
-        RAISE_APPLICATION_ERROR(-20003, 'Champ non trouvé ou inactif');
-    END IF;
-    
+    WHERE champ_id = p_champ_id
+      AND statut = 'ACTIF';
+      
     -- Vérifier la superficie réelle déjà occupée
     v_superficie_occupee := SUPERFICIE_REELLE_CHAMP(p_champ_id);
     
@@ -43,7 +39,10 @@ BEGIN
     
     COMMIT;
     RETURN v_parcelle_id;
+
 EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Champ non trouvé ou inactif');
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE;
