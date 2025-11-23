@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WaterSaver - Login</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1>💧 WaterSaver</h1>
+            <p class="subtitle">Gestion intelligente des ressources hydriques</p>
+
+            <div id="alert-container"></div>
+
+            <div id="login-form" class="auth-form">
+                <h2>Connexion</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Mot de passe</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Se connecter</button>
+                </form>
+                <p class="toggle-form">
+                    Pas encore de compte? <a href="#" onclick="toggleForms()">S'inscrire</a>
+                </p>
+            </div>
+
+            <div id="register-form" class="auth-form" style="display: none;">
+                <h2>Inscription</h2>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="register-nom">Nom</label>
+                        <input type="text" id="register-nom" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-prenom">Prénom</label>
+                        <input type="text" id="register-prenom" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Mot de passe</label>
+                        <input type="password" id="register-password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-telephone">Téléphone</label>
+                        <input type="tel" id="register-telephone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-role">Rôle</label>
+                        <select id="register-role" required>
+                            <option value="AGRICULTEUR">Agriculteur</option>
+                            <option value="TECHNICIEN">Technicien</option>
+                            <option value="INSPECTEUR">Inspecteur</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-region">Région (optionnel)</label>
+                        <input type="text" id="register-region">
+                    </div>
+                    <button type="submit" class="btn btn-primary">S'inscrire</button>
+                </form>
+                <p class="toggle-form">
+                    Déjà un compte? <a href="#" onclick="toggleForms()">Se connecter</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>

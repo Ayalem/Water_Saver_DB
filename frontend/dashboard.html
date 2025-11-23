@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WaterSaver - Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>💧 WaterSaver</h2>
+                <p id="user-info"></p>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#" onclick="showSection('dashboard')" class="active">Tableau de bord</a></li>
+                <li><a href="#" onclick="showSection('champs')">Mes Champs</a></li>
+                <li><a href="#" onclick="showSection('parcelles')">Parcelles</a></li>
+                <li><a href="#" onclick="showSection('alertes')">Alertes</a></li>
+                <li><a href="#" onclick="showSection('notifications')">Notifications <span id="notif-badge"></span></a></li>
+            </ul>
+            <button onclick="logout()" class="btn btn-logout">Déconnexion</button>
+        </nav>
+
+        <main class="main-content">
+            <div id="alert-container"></div>
+
+            <section id="dashboard-section" class="content-section">
+                <h1>Tableau de bord</h1>
+                <div class="stats-grid" id="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Champs</h3>
+                        <p class="stat-value" id="total-champs">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Parcelles Actives</h3>
+                        <p class="stat-value" id="total-parcelles">-</p>
+                    </div>
+                    <div class="stat-card alert">
+                        <h3>Alertes Actives</h3>
+                        <p class="stat-value" id="total-alertes">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Notifications</h3>
+                        <p class="stat-value" id="total-notifications">-</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="champs-section" class="content-section" style="display: none;">
+                <div class="section-header">
+                    <h1>Mes Champs</h1>
+                    <button onclick="showCreateChampModal()" class="btn btn-primary">+ Nouveau Champ</button>
+                </div>
+                <div id="champs-list" class="data-list"></div>
+            </section>
+
+            <section id="parcelles-section" class="content-section" style="display: none;">
+                <div class="section-header">
+                    <h1>Parcelles</h1>
+                    <button onclick="showCreateParcelleModal()" class="btn btn-primary">+ Nouvelle Parcelle</button>
+                </div>
+                <div id="parcelles-list" class="data-list"></div>
+            </section>
+
+            <section id="alertes-section" class="content-section" style="display: none;">
+                <div class="section-header">
+                    <h1>Alertes</h1>
+                    <div class="filters">
+                        <select id="alerte-statut-filter" onchange="loadAlertes()">
+                            <option value="">Tous les statuts</option>
+                            <option value="ACTIVE">Active</option>
+                            <option value="EN_COURS">En cours</option>
+                            <option value="RESOLUE">Résolue</option>
+                        </select>
+                        <select id="alerte-severite-filter" onchange="loadAlertes()">
+                            <option value="">Toutes les sévérités</option>
+                            <option value="CRITIQUE">Critique</option>
+                            <option value="HAUTE">Haute</option>
+                            <option value="ATTENTION">Attention</option>
+                            <option value="INFO">Info</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="alertes-list" class="data-list"></div>
+            </section>
+
+            <section id="notifications-section" class="content-section" style="display: none;">
+                <h1>Notifications</h1>
+                <div id="notifications-list" class="data-list"></div>
+            </section>
+        </main>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
