@@ -44,30 +44,6 @@ BEGIN
     RETURN v_mesure_id;
 END collecter_mesure;
 /
-CREATE OR REPLACE PROCEDURE collecter_mesures_all IS
-BEGIN
-    FOR cap IN (
-        SELECT capteur_id, type_mesure_default, unite_default
-        FROM CAPTEUR
-        WHERE statut = 'ACTIF'
-    )
-    LOOP
-        DECLARE
-            v_val NUMBER;
-        BEGIN
-            -- Exemple : valeur simulée (à remplacer par lecture réelle)
-            v_val := DBMS_RANDOM.VALUE(10, 50);
-
-            collecter_mesure(
-                cap.capteur_id,
-                cap.type_mesure_default,
-                v_val,
-                cap.unite_default
-            );
-        END;
-    END LOOP;
-END collecter_mesures_all;
-/
 BEGIN
     DBMS_SCHEDULER.CREATE_JOB(
         job_name        => 'JOB_COLLECTE_MESURES_15MIN',
