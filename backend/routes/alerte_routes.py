@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from auth import login_required, role_required
-import cx_Oracle
+import oracledb
 from database import get_db_connection
 
 alerte_bp = Blueprint('alerte', __name__, url_prefix='/api/alertes')
@@ -12,6 +12,10 @@ def get_alertes():
     cursor = conn.cursor()
 
     try:
+        # TECHNICIEN should NOT have access to alertes
+        if session['role'] == 'TECHNICIEN':
+            return jsonify({'error': 'Access denied - technicians cannot view alertes'}), 403
+            
         statut = request.args.get('statut')
         severite = request.args.get('severite')
 
@@ -41,13 +45,11 @@ def get_alertes():
         cursor.execute(query, params)
 
         columns = [d[0].lower() for d in cursor.description]
-        results = []
-        for row in cursor.fetchall():
-            results.append(dict(zip(columns, row)))
+        results = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
         return jsonify({'alertes': results}), 200
 
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         error_obj, = e.args
         return jsonify({'error': error_obj.message}), 500
 
@@ -66,7 +68,7 @@ def resolve_alerte(alerte_id):
 
         return jsonify({'message': 'Alerte resolved'}), 200
 
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         error_obj, = e.args
         return jsonify({'error': error_obj.message}), 400
 

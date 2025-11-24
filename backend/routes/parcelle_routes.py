@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from auth import login_required, role_required
-import cx_Oracle
+import oracledb
 from database import get_db_connection
 
 parcelle_bp = Blueprint('parcelle', __name__, url_prefix='/api/parcelles')
@@ -12,6 +12,10 @@ def get_parcelles():
     cursor = conn.cursor()
 
     try:
+        # TECHNICIEN should NOT have access to parcelles
+        if session['role'] == 'TECHNICIEN':
+            return jsonify({'error': 'Access denied - technicians cannot view parcelles'}), 403
+            
         champ_id = request.args.get('champ_id')
 
         if champ_id:
@@ -32,13 +36,11 @@ def get_parcelles():
             """)
 
         columns = [d[0].lower() for d in cursor.description]
-        results = []
-        for row in cursor.fetchall():
-            results.append(dict(zip(columns, row)))
+        results = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
         return jsonify({'parcelles': results}), 200
 
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         error_obj, = e.args
         return jsonify({'error': error_obj.message}), 500
 
@@ -53,14 +55,14 @@ def get_parcelle(parcelle_id):
     cursor = conn.cursor()
 
     try:
-        result_cursor = cursor.var(cx_Oracle.CURSOR)
-        cursor.callfunc(
+        # Call the function and get the cursor
+        result_cursor = cursor.callfunc(
             'GET_PARCELLE_BY_ID',
-            cx_Oracle.CURSOR,
+            oracledb.CURSOR,
             [parcelle_id]
         )
-        result_cursor = cursor.fetchone()[0]
 
+        # Fetch from the returned cursor
         columns = [d[0].lower() for d in result_cursor.description]
         row = result_cursor.fetchone()
 
@@ -70,7 +72,7 @@ def get_parcelle(parcelle_id):
         else:
             return jsonify({'error': 'Parcelle not found'}), 404
 
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         error_obj, = e.args
         return jsonify({'error': error_obj.message}), 500
 
@@ -88,7 +90,7 @@ def create_parcelle():
     try:
         parcelle_id = cursor.callfunc(
             'CREATE_PARCELLE',
-            cx_Oracle.NUMBER,
+            oracledb.NUMBER,
             [
                 data['champ_id'],
                 data.get('type_culture_id'),
@@ -100,10 +102,12 @@ def create_parcelle():
                 data.get('date_recolte_prevue')
             ]
         )
+        
+        conn.commit()  # Explicitly commit the transaction
 
         return jsonify({'message': 'Parcelle created', 'parcelle_id': int(parcelle_id)}), 201
 
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         error_obj, = e.args
         return jsonify({'error': error_obj.message}), 400
 
@@ -121,7 +125,7 @@ def update_parcelle(parcelle_id):
     try:
         success = cursor.callfunc(
             'UPDATE_PARCELLE',
-            cx_Oracle.NUMBER,
+            bool,
             [
                 parcelle_id,
                 data.get('type_culture_id'),
@@ -140,7 +144,7 @@ def update_parcelle(parcelle_id):
         else:
             return jsonify({'error': 'Parcelle not found'}), 404
 
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         error_obj, = e.args
         return jsonify({'error': error_obj.message}), 400
 

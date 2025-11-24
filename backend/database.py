@@ -1,17 +1,39 @@
-import cx_Oracle
+import oracledb
+import os
 from config import Config
 
 config = Config()
 
+# Set NLS_LANG for UTF-8 encoding
+os.environ['NLS_LANG'] = 'AMERICAN_AMERICA.AL32UTF8'
+
 def get_db_connection():
     try:
-        connection = cx_Oracle.connect(
-            config.ORACLE_USER,
-            config.ORACLE_PASSWORD,
-            config.ORACLE_DSN
+        connection = oracledb.connect(
+            user=config.ORACLE_USER,
+            password=config.ORACLE_PASSWORD,
+            dsn=config.ORACLE_DSN
         )
+        
+        # Set VPD context if user is logged in
+        from flask import session
+        if 'user_id' in session and 'role' in session:
+            cursor = connection.cursor()
+            try:
+                plsql = """
+                BEGIN
+                    DBMS_SESSION.SET_CONTEXT('USER_CTX', 'USER_ID', :uid);
+                    DBMS_SESSION.SET_CONTEXT('USER_CTX', 'ROLE', :role);
+                END;
+                """
+                cursor.execute(plsql, {'uid': str(session['user_id']), 'role': session['role']})
+                cursor.close()
+            except Exception as e:
+                print(f"Warning: Could not set VPD context: {e}")
+                cursor.close()
+        
         return connection
-    except cx_Oracle.Error as error:
+    except oracledb.Error as error:
         print(f"Database connection error: {error}")
         raise
 
@@ -25,7 +47,7 @@ def execute_procedure(proc_name, params=None):
             cursor.callproc(proc_name)
         conn.commit()
         return True
-    except cx_Oracle.Error as error:
+    except oracledb.Error as error:
         conn.rollback()
         raise error
     finally:
@@ -42,7 +64,7 @@ def execute_function(func_name, return_type, params=None):
         else:
             cursor.callfunc(func_name, return_type)
         return result.getvalue()
-    except cx_Oracle.Error as error:
+    except oracledb.Error as error:
         raise error
     finally:
         cursor.close()
@@ -75,7 +97,7 @@ def execute_query(query, params=None, fetchone=False):
             for row in cursor.fetchall():
                 results.append(dict(zip(columns, row)))
             return results
-    except cx_Oracle.Error as error:
+    except oracledb.Error as error:
         raise error
     finally:
         cursor.close()

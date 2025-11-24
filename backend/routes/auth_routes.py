@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, session
-from auth import register_user, authenticate_user, get_current_user, login_required
+from auth import register_user, authenticate_user, get_current_user, login_required, set_oracle_context
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
@@ -42,6 +42,9 @@ def login():
         session['role'] = user['role']
         session['nom'] = user['nom']
         session['prenom'] = user['prenom']
+        
+        # Set Oracle context for VPD policies
+        set_oracle_context(user['user_id'], user['role'])
 
         return jsonify({
             'message': 'Login successful',

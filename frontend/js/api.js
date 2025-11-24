@@ -14,8 +14,12 @@ async function apiCall(endpoint, method = 'GET', data = null) {
     }
 
     try {
+        console.log(`Making API call to: ${API_URL}${endpoint}`, { method, data });
         const response = await fetch(`${API_URL}${endpoint}`, options);
+        console.log(`Response status: ${response.status}`);
+
         const result = await response.json();
+        console.log('Response data:', result);
 
         if (!response.ok) {
             throw new Error(result.error || 'Request failed');
@@ -24,6 +28,7 @@ async function apiCall(endpoint, method = 'GET', data = null) {
         return result;
     } catch (error) {
         console.error('API Error:', error);
+        console.error('Error details:', error.message);
         throw error;
     }
 }
@@ -62,15 +67,36 @@ const api = {
         getAll: (lue = null) => apiCall(`/notifications${lue ? `?lue=${lue}` : ''}`),
         markRead: (id) => apiCall(`/notifications/${id}/mark-read`, 'POST'),
         countUnread: () => apiCall('/notifications/count-unread')
+    },
+
+    interventions: {
+        getAll: () => apiCall('/interventions'),
+        getById: (id) => apiCall(`/interventions/${id}`),
+        updateStatus: (id, data) => apiCall(`/interventions/${id}/update-status`, 'PUT', data)
+    },
+
+    rapports: {
+        getAll: () => apiCall('/rapports'),
+        getById: (id) => apiCall(`/rapports/${id}`),
+        generate: (data) => apiCall('/rapports/generate', 'POST', data)
     }
 };
 
 function showAlert(message, type = 'success') {
     const container = document.getElementById('alert-container');
+    if (!container) {
+        console.error('Alert container not found!');
+        alert(message); // Fallback to browser alert
+        return;
+    }
+
     const alert = document.createElement('div');
     alert.className = `alert alert-${type}`;
     alert.textContent = message;
+    alert.style.display = 'block';
     container.appendChild(alert);
+
+    console.log(`Alert shown: [${type}] ${message}`);
 
     setTimeout(() => {
         alert.remove();
@@ -78,5 +104,7 @@ function showAlert(message, type = 'success') {
 }
 
 function handleError(error) {
-    showAlert(error.message || 'Une erreur est survenue', 'error');
+    const errorMessage = error.message || 'Une erreur est survenue';
+    console.error('Handling error:', errorMessage);
+    showAlert(errorMessage, 'error');
 }

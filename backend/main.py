@@ -5,8 +5,15 @@ from config import Config
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.url_map.strict_slashes = False  # Prevent 308 redirects for trailing slashes
 
-CORS(app, supports_credentials=True, origins=['http://localhost:3000', 'http://127.0.0.1:3000'])
+
+CORS(app, supports_credentials=True, origins=[
+    'http://localhost:3000', 
+    'http://127.0.0.1:3000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000'
+])
 Session(app)
 
 from routes.auth_routes import auth_bp
@@ -14,12 +21,18 @@ from routes.champ_routes import champ_bp
 from routes.parcelle_routes import parcelle_bp
 from routes.alerte_routes import alerte_bp
 from routes.notification_routes import notification_bp
+from routes.rapport_routes import rapport_bp
+from routes.intervention_routes import intervention_bp
+from routes.alerte_resolve_routes import alerte_resolve_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(champ_bp)
 app.register_blueprint(parcelle_bp)
 app.register_blueprint(alerte_bp)
 app.register_blueprint(notification_bp)
+app.register_blueprint(rapport_bp, url_prefix='/api/rapports')
+app.register_blueprint(intervention_bp)
+app.register_blueprint(alerte_resolve_bp, url_prefix='/api')
 
 @app.route('/api/health', methods=['GET'])
 def health_check():

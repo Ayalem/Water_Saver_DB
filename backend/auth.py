@@ -1,7 +1,7 @@
 import hashlib
 from functools import wraps
 from flask import session, jsonify, request
-import cx_Oracle
+import oracledb
 from database import get_db_connection, execute_query
 
 def hash_password(password):
@@ -52,7 +52,7 @@ def register_user(email, password, nom, prenom, telephone, role, region_affectat
         conn.commit()
         return {'success': True, 'message': 'User created successfully'}
 
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         conn.rollback()
         error_obj, = e.args
         return {'success': False, 'error': error_obj.message}
@@ -60,6 +60,26 @@ def register_user(email, password, nom, prenom, telephone, role, region_affectat
     finally:
         cursor.close()
         conn.close()
+
+def set_oracle_context(user_id, role):
+    """Set Oracle application context for VPD policies"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        plsql = """
+        BEGIN
+            DBMS_SESSION.SET_CONTEXT('USER_CTX', 'USER_ID', :uid);
+            DBMS_SESSION.SET_CONTEXT('USER_CTX', 'ROLE', :role);
+        END;
+        """
+        cursor.execute(plsql, {'uid': user_id, 'role': role})
+        cursor.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Error setting Oracle context: {e}")
+        return False
+
 
 def authenticate_user(email, password):
     conn = get_db_connection()
@@ -81,7 +101,7 @@ def authenticate_user(email, password):
         else:
             return {'success': False, 'error': 'Login failed'}
 
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         error_obj, = e.args
         return {'success': False, 'error': error_obj.message}
 

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from auth import login_required
-import cx_Oracle
+import oracledb
 from database import get_db_connection
 
 notification_bp = Blueprint('notification', __name__, url_prefix='/api/notifications')
@@ -8,35 +8,32 @@ notification_bp = Blueprint('notification', __name__, url_prefix='/api/notificat
 @notification_bp.route('/', methods=['GET'])
 @login_required
 def get_notifications():
+    """
+    Get notifications using voir_notification procedure
+    This ensures user only sees their own notifications
+    """
     conn = get_db_connection()
     cursor = conn.cursor()
 
     try:
-        lue = request.args.get('lue')
+        user_id = session['user_id']
+        
+        # Use the voir_notification procedure for user-specific access
+        result_cursor = cursor.var(oracledb.CURSOR)
+        cursor.callproc('VOIR_NOTIFICATION', [user_id, result_cursor])
+        
+        # Fetch results from the returned cursor
+        notifications = []
+        ref_cursor = result_cursor.getvalue()
+        
+        if ref_cursor:
+            columns = [d[0].lower() for d in ref_cursor.description]
+            for row in ref_cursor:
+                notifications.append(dict(zip(columns, row)))
+        
+        return jsonify({'notifications': notifications}), 200
 
-        query = """
-            SELECT n.*
-            FROM NOTIFICATION n
-            WHERE n.user_id = :user_id
-        """
-        params = {'user_id': session['user_id']}
-
-        if lue:
-            query += " AND n.lue = :lue"
-            params['lue'] = lue
-
-        query += " ORDER BY n.date_envoi DESC"
-
-        cursor.execute(query, params)
-
-        columns = [d[0].lower() for d in cursor.description]
-        results = []
-        for row in cursor.fetchall():
-            results.append(dict(zip(columns, row)))
-
-        return jsonify({'notifications': results}), 200
-
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         error_obj, = e.args
         return jsonify({'error': error_obj.message}), 500
 
@@ -55,7 +52,7 @@ def mark_notification_read(notification_id):
 
         return jsonify({'message': 'Notification marked as read'}), 200
 
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         error_obj, = e.args
         return jsonify({'error': error_obj.message}), 400
 
@@ -81,7 +78,7 @@ def count_unread():
 
         return jsonify({'count': count}), 200
 
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         error_obj, = e.args
         return jsonify({'error': error_obj.message}), 500
 

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from auth import login_required, role_required
-import cx_Oracle
+import oracledb
 from database import get_db_connection, fetch_cursor_results
 
 champ_bp = Blueprint('champ', __name__, url_prefix='/api/champs')
@@ -12,31 +12,33 @@ def get_champs():
     cursor = conn.cursor()
 
     try:
+        # TECHNICIEN should NOT have access to champs
+        if session['role'] == 'TECHNICIEN':
+            return jsonify({'error': 'Access denied - technicians cannot view champs'}), 403
+            
         if session['role'] == 'AGRICULTEUR':
-            result_cursor = cursor.var(cx_Oracle.CURSOR)
-            cursor.callfunc(
+            # Call the PL/SQL function that returns a REF CURSOR
+            # The function LISTER_CHAMPS_UTILISATEUR is assumed to return a SYS_REFCURSOR
+            ref_cursor = cursor.callfunc(
                 'LISTER_CHAMPS_UTILISATEUR',
-                cx_Oracle.CURSOR,
-                [session['user_id'], None]
+                oracledb.CURSOR,
+                [session['user_id']]
             )
-            result_cursor = cursor.fetchone()[0]
+            results = fetch_cursor_results(ref_cursor)
+            ref_cursor.close() # Close the ref cursor after fetching results
         else:
+            # For other roles (ADMIN, INSPECTEUR), execute a direct SQL query
             cursor.execute("""
                 SELECT c.*, u.nom as proprietaire_nom, u.prenom as proprietaire_prenom
                 FROM CHAMP c
                 JOIN UTILISATEUR u ON c.user_id = u.user_id
                 ORDER BY c.date_creation DESC
             """)
-            result_cursor = cursor
-
-        columns = [d[0].lower() for d in result_cursor.description]
-        results = []
-        for row in result_cursor:
-            results.append(dict(zip(columns, row)))
+            results = fetch_cursor_results(cursor) # Use the main cursor
 
         return jsonify({'champs': results}), 200
 
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         error_obj, = e.args
         return jsonify({'error': error_obj.message}), 500
 
@@ -51,24 +53,21 @@ def get_champ(champ_id):
     cursor = conn.cursor()
 
     try:
-        result_cursor = cursor.var(cx_Oracle.CURSOR)
-        cursor.callfunc(
+        # Call the PL/SQL function that returns a REF CURSOR for a single champ
+        ref_cursor = cursor.callfunc(
             'AFFICHER_DETAILS_CHAMP',
-            cx_Oracle.CURSOR,
+            oracledb.CURSOR,
             [champ_id]
         )
-        result_cursor = cursor.fetchone()[0]
+        results = fetch_cursor_results(ref_cursor)
+        ref_cursor.close() # Close the ref cursor after fetching results
 
-        columns = [d[0].lower() for d in result_cursor.description]
-        row = result_cursor.fetchone()
-
-        if row:
-            champ = dict(zip(columns, row))
-            return jsonify({'champ': champ}), 200
+        if results:
+            return jsonify({'champ': results[0]}), 200
         else:
-            return jsonify({'error': 'Champ not found'}), 404
+            return jsonify({'message': 'Champ not found'}), 404
 
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         error_obj, = e.args
         return jsonify({'error': error_obj.message}), 500
 
@@ -86,10 +85,10 @@ def create_champ():
     try:
         user_id = session['user_id'] if session['role'] == 'AGRICULTEUR' else data.get('user_id')
 
-        champ_id = cursor.var(cx_Oracle.NUMBER)
+        champ_id = cursor.var(oracledb.NUMBER)
         champ_id = cursor.callfunc(
             'CREATE_CHAMP',
-            cx_Oracle.NUMBER,
+            oracledb.NUMBER,
             [
                 user_id,
                 data['nom'],
@@ -106,10 +105,12 @@ def create_champ():
                 data.get('date_plantation')
             ]
         )
+        
+        conn.commit()  # Explicitly commit the transaction
 
         return jsonify({'message': 'Champ created', 'champ_id': int(champ_id)}), 201
 
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         error_obj, = e.args
         return jsonify({'error': error_obj.message}), 400
 
@@ -127,7 +128,7 @@ def update_champ(champ_id):
     try:
         success = cursor.callfunc(
             'UPDATE_CHAMP',
-            cx_Oracle.NUMBER,
+            bool,
             [
                 champ_id,
                 data.get('nom'),
@@ -151,7 +152,7 @@ def update_champ(champ_id):
         else:
             return jsonify({'error': 'Champ not found'}), 404
 
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         error_obj, = e.args
         return jsonify({'error': error_obj.message}), 400
 

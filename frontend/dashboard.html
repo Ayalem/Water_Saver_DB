@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WaterSaver - Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
     <div class="dashboard-container">
         <nav class="sidebar">
@@ -18,7 +20,10 @@
                 <li><a href="#" onclick="showSection('champs')">Mes Champs</a></li>
                 <li><a href="#" onclick="showSection('parcelles')">Parcelles</a></li>
                 <li><a href="#" onclick="showSection('alertes')">Alertes</a></li>
-                <li><a href="#" onclick="showSection('notifications')">Notifications <span id="notif-badge"></span></a></li>
+                <li><a href="#" onclick="showSection('interventions')">Interventions</a></li>
+                <li><a href="#" onclick="showSection('rapports')">Rapports</a></li>
+                <li><a href="#" onclick="showSection('notifications')">Notifications <span id="notif-badge"></span></a>
+                </li>
             </ul>
             <button onclick="logout()" class="btn btn-logout">Déconnexion</button>
         </nav>
@@ -86,6 +91,19 @@
                 <div id="alertes-list" class="data-list"></div>
             </section>
 
+            <section id="interventions-section" class="content-section" style="display: none;">
+                <h1>Interventions</h1>
+                <div id="interventions-list" class="data-list"></div>
+            </section>
+
+            <section id="rapports-section" class="content-section" style="display: none;">
+                <div class="section-header">
+                    <h1>Rapports</h1>
+                    <button onclick="showGenerateRapportModal()" class="btn btn-primary">+ Générer Rapport</button>
+                </div>
+                <div id="rapports-list" class="data-list"></div>
+            </section>
+
             <section id="notifications-section" class="content-section" style="display: none;">
                 <h1>Notifications</h1>
                 <div id="notifications-list" class="data-list"></div>
@@ -103,4 +121,5 @@
     <script src="js/api.js"></script>
     <script src="js/dashboard.js"></script>
 </body>
+
 </html>
