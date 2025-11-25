@@ -254,12 +254,12 @@ function showSection(sectionName) {
             });
 
             // Show selected section
-            const section = document.getElementById(`${ sectionName } -section`);
+            const section = document.getElementById(`${sectionName}-section`);
             if (section) {
                 section.style.display = 'block';
 
                 // Add active class to corresponding nav link
-                const navLink = document.querySelector(`.nav - menu a[onclick *= "${sectionName}"]`);
+                const navLink = document.querySelector(`.nav-menu a[onclick*="${sectionName}"]`);
                 if (navLink) {
                     navLink.classList.add('active');
                 }
