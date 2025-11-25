@@ -255,7 +255,7 @@ function showSection(sectionName) {
     });
     
     // Show selected section
-    const section = document.getElementById(`${ sectionName } -section`);
+    const section = document.getElementById(`${sectionName}-section`);
     if (section) {
         section.style.display = 'block';
         
