@@ -278,14 +278,11 @@ function showSection(sectionName) {
                     case 'alertes':
                         loadAlertes();
                         break;
-                    case 'notifications':
-                        loadNotifications();
-                        break;
-                    case 'interventions':
-                        loadInterventions();
-                        break;
                     case 'rapports':
                         loadRapports();
+                        break;
+                    case 'notifications':
+                        loadNotifications();
                         break;
                     case 'capteurs':
                         loadCapteurs();
