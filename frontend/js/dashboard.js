@@ -260,7 +260,7 @@ function showSection(sectionName) {
         section.style.display = 'block';
         
         // Add active class to corresponding nav link
-        const navLink = document.querySelector(`.nav - menu a[onclick *= "${sectionName}"]`);
+        const navLink = document.querySelector(`.nav-menu a[onclick*="${sectionName}"]`);
         if (navLink) {
             navLink.classList.add('active');
         }
