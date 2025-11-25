@@ -79,6 +79,40 @@ const api = {
         getAll: () => apiCall('/rapports'),
         getById: (id) => apiCall(`/rapports/${id}`),
         generate: (data) => apiCall('/rapports/generate', 'POST', data)
+    },
+
+    capteurs: {
+        getAll: () => apiCall('/capteurs'),
+        getById: (id) => apiCall(`/capteurs/${id}`),
+        create: (data) => apiCall('/capteurs', 'POST', data),
+        update: (id, data) => apiCall(`/capteurs/${id}`, 'PUT', data),
+        maintenance: (id, data) => apiCall(`/capteurs/${id}/maintenance`, 'PUT', data),
+        delete: (id) => apiCall(`/capteurs/${id}`, 'DELETE')
+    },
+
+    mesures: {
+        getAll: (params = {}) => {
+            const query = new URLSearchParams(params).toString();
+            return apiCall(`/mesures${query ? `?${query}` : ''}`);
+        },
+        getById: (id) => apiCall(`/mesures/${id}`),
+        getByCapteur: (capteurId) => apiCall(`/mesures/capteur/${capteurId}`),
+        collect: (data) => apiCall('/mesures', 'POST', data)
+    },
+
+    typeCultures: {
+        getAll: () => apiCall('/type-cultures'),
+        getById: (id) => apiCall(`/type-cultures/${id}`),
+        create: (data) => apiCall('/type-cultures', 'POST', data),
+        update: (id, data) => apiCall(`/type-cultures/${id}`, 'PUT', data),
+        delete: (id) => apiCall(`/type-cultures/${id}`, 'DELETE')
+    },
+
+    users: {
+        getAll: () => apiCall('/users'),
+        updateStatus: (id, statut) => apiCall(`/users/${id}/status`, 'PUT', { statut }),
+        updateRole: (id, role) => apiCall(`/users/${id}/role`, 'PUT', { role }),
+        delete: (id) => apiCall(`/users/${id}`, 'DELETE')
     }
 };
 
