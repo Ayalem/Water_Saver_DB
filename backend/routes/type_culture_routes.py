@@ -67,8 +67,9 @@ def get_type_culture(type_culture_id):
         conn.close()
 
 
-@type_culture_bp.route('/', methods=['POST'])
-@role_required('ADMIN', 'AGRICULTEUR')
+@type_culture_bp.route('', methods=['POST'])
+@login_required
+@role_required('ADMIN')  # Only ADMIN can create type cultures
 def create_type_culture():
     """Create a new type culture using ajouter_type_culture procedure"""
     data = request.json
