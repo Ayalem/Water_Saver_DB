@@ -171,3 +171,40 @@ def update_intervention_status(intervention_id):
     finally:
         cursor.close()
         conn.close()
+
+
+@intervention_bp.route('/<int:intervention_id>/complete', methods=['POST'])
+@role_required('TECHNICIEN', 'ADMIN')
+def complete_intervention(intervention_id):
+    """Complete intervention using terminer_intervention procedure (TECHNICIEN only for their own)"""
+    data = request.json
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        user_role = session.get('role')
+        user_id = session.get('user_id')
+        
+        cout = data.get('cout', 0)
+        notes = data.get('notes', '')
+        
+        # Use terminer_intervention procedure
+        # Procedure verifies technician ownership
+        cursor.callproc('TERMINER_INTERVENTION', [
+            intervention_id,
+            user_id,  # technicien_id
+            cout,
+            notes
+        ])
+        conn.commit()
+        
+        return jsonify({'message': 'Intervention completed successfully'}), 200
+        
+    except oracledb.DatabaseError as e:
+        error_obj, = e.args
+        conn.rollback()
+        return jsonify({'error': error_obj.message}), 400
+    
+    finally:
+        cursor.close()
+        conn.close()

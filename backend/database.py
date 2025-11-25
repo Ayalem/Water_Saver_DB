@@ -15,22 +15,6 @@ def get_db_connection():
             dsn=config.ORACLE_DSN
         )
         
-        # Set VPD context if user is logged in
-        from flask import session
-        if 'user_id' in session and 'role' in session:
-            cursor = connection.cursor()
-            try:
-                plsql = """
-                BEGIN
-                    DBMS_SESSION.SET_CONTEXT('USER_CTX', 'USER_ID', :uid);
-                    DBMS_SESSION.SET_CONTEXT('USER_CTX', 'ROLE', :role);
-                END;
-                """
-                cursor.execute(plsql, {'uid': str(session['user_id']), 'role': session['role']})
-                cursor.close()
-            except Exception as e:
-                print(f"Warning: Could not set VPD context: {e}")
-                cursor.close()
         
         return connection
     except oracledb.Error as error:

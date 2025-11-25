@@ -62,6 +62,10 @@ GRANT EXECUTE ON voir_notifications TO TECHNICIEN;
 GRANT EXECUTE ON update_intervention_technicien TO TECHNICIEN;
 GRANT EXECUTE ON terminer_intervention TO TECHNICIEN;
 
+-- Capteur management procedures
+GRANT EXECUTE ON installer_capteur TO TECHNICIEN;
+GRANT EXECUTE ON maintenance_capteur TO TECHNICIEN;
+
 -- Minimal table access (only for lookups - no user data)
 GRANT SELECT ON TYPE_CULTURE TO TECHNICIEN;
 
@@ -130,6 +134,18 @@ GRANT EXECUTE ON ajouter_type_culture TO ADMINISTRATEUR;
 GRANT EXECUTE ON update_intervention_technicien TO ADMINISTRATEUR;
 GRANT EXECUTE ON assigner_intervention TO ADMINISTRATEUR;
 GRANT EXECUTE ON terminer_intervention TO ADMINISTRATEUR;
+
+-- Capteur procedures
+GRANT EXECUTE ON installer_capteur TO ADMINISTRATEUR;
+GRANT EXECUTE ON maintenance_capteur TO ADMINISTRATEUR;
+
+-- Mesure procedures
+GRANT EXECUTE ON collecter_mesure TO ADMINISTRATEUR;
+
+-- User management procedures
+GRANT EXECUTE ON update_statut_user TO ADMINISTRATEUR;
+GRANT EXECUTE ON update_user_role TO ADMINISTRATEUR;
+GRANT EXECUTE ON delete_user TO ADMINISTRATEUR;
 
 -- ============================================================================
 -- IMPORTANT NOTES

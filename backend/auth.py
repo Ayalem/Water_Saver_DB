@@ -61,25 +61,6 @@ def register_user(email, password, nom, prenom, telephone, role, region_affectat
         cursor.close()
         conn.close()
 
-def set_oracle_context(user_id, role):
-    """Set Oracle application context for VPD policies"""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        plsql = """
-        BEGIN
-            DBMS_SESSION.SET_CONTEXT('USER_CTX', 'USER_ID', :uid);
-            DBMS_SESSION.SET_CONTEXT('USER_CTX', 'ROLE', :role);
-        END;
-        """
-        cursor.execute(plsql, {'uid': user_id, 'role': role})
-        cursor.close()
-        conn.close()
-        return True
-    except Exception as e:
-        print(f"Error setting Oracle context: {e}")
-        return False
-
 
 def authenticate_user(email, password):
     conn = get_db_connection()
