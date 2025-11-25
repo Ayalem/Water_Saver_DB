@@ -240,69 +240,69 @@ async function resolveAlerte(id) {
     }
 }
 
+
 function showSection(sectionName) {
-            console.log('Showing section:', sectionName);
-
-            // Hide all sections
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.style.display = 'none';
-            });
-
-            // Remove active class from all nav links
-            document.querySelectorAll('.nav-menu a').forEach(link => {
-                link.classList.remove('active');
-            });
-
-            // Show selected section
-        const section = document.getElementById(`${sectionName}-section`);
-        if (section) {
-            section.style.display = 'block';
-            
-            // Add active class to corresponding nav link
-            const navLink = document.querySelector(`.nav-menu a[onclick*="${sectionName}"]`);
-            if (navLink) {
-                navLink.classList.add('active');
-            }
-    }
-
-                // Load data for the section
-                switch (sectionName) {
-                    case 'dashboard':
-                        loadDashboard();
-                        break;
-                    case 'champs':
-                        loadChamps();
-                        break;
-                    case 'parcelles':
-                        loadParcelles();
-                        break;
-                    case 'alertes':
-                        loadAlertes();
-                        break;
-                    case 'notifications':
-                        loadNotifications();
-                        break;
-                    case 'interventions':
-                        loadInterventions();
-                        break;
-                    case 'rapports':
-                        loadRapports();
-                        break;
-                    case 'capteurs':
-                        loadCapteurs();
-                        break;
-                    case 'mesures':
-                        loadMesures();
-                        break;
-                    case 'type-cultures':
-                        loadTypeCultures();
-                        break;
-                    case 'users':
-                        loadUsers();
-                        break;
-                }
-            }
+    console.log('Showing section:', sectionName);
+    
+    // Hide all sections
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // Remove active class from all nav links
+    document.querySelectorAll('.nav-menu a').forEach(link => {
+        link.classList.remove('active');
+    });
+    
+    // Show selected section
+    const section = document.getElementById(`${ sectionName } -section`);
+    if (section) {
+        section.style.display = 'block';
+        
+        // Add active class to corresponding nav link
+        const navLink = document.querySelector(`.nav - menu a[onclick *= "${sectionName}"]`);
+        if (navLink) {
+            navLink.classList.add('active');
         }
+        
+        // Load data for the section
+        switch(sectionName) {
+            case 'dashboard':
+                loadDashboard();
+                break;
+            case 'champs':
+                loadChamps();
+                break;
+            case 'parcelles':
+                loadParcelles();
+                break;
+            case 'alertes':
+                loadAlertes();
+                break;
+            case 'notifications':
+                loadNotifications();
+                break;
+            case 'interventions':
+                loadInterventions();
+                break;
+            case 'rapports':
+                loadRapports();
+                break;
+            case 'capteurs':
+                loadCapteurs();
+                break;
+            case 'mesures':
+                loadMesures();
+                break;
+            case 'type-cultures':
+                loadTypeCultures();
+                break;
+            case 'users':
+                loadUsers();
+                break;
+        }
+    }
+}
         function showCreateChampModal() {
             const modal = document.getElementById('modal');
             const modalBody = document.getElementById('modal-body');
